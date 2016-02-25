@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public class ListElement : MonoBehaviour 
 {
     [SerializeField] private Toggle toggle;
+    [SerializeField] private Button editButton;
     [SerializeField] private GameObject selectedObject;
     [SerializeField] private GameObject highlightedObject;
 
@@ -26,6 +27,7 @@ public class ListElement : MonoBehaviour
     private MonoBehaviourPooler<string, Text> labels;
 
     private Action select;
+    private Action edit;
 
     private void Awake()
     {
@@ -34,16 +36,20 @@ public class ListElement : MonoBehaviour
                                                        (text, label) => label.text = text);
 
         toggle.onValueChanged.AddListener(OnToggled);
+        editButton.onClick.AddListener(() => edit());
     }
 
-    public void Setup(Action action, params string[] labels)
+    public void Setup(Action select,
+                      Action edit, 
+                      params string[] labels)
     {
-        this.select = action;
+        this.select = select;
+        this.edit = edit;
         this.labels.SetActive(labels);
     }
 
     private void OnToggled(bool active)
     {
-        select();
+        if (active) select();
     }
 }

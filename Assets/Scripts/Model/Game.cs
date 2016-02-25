@@ -31,7 +31,9 @@ public class State
 
 public class DObject
 {
-    public Dictionary<DAttribute, object> attributes;
+    public string name;
+    public Dictionary<DAttribute, object> attributes 
+        = new Dictionary<DAttribute, object>();
 }
 
 public class DAttribute
