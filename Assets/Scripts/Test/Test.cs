@@ -71,36 +71,105 @@ public class Test : MonoBehaviour
                       ToString(value));
     }
 
+    public Proto proto;
+
     private void Start()
     {
         var mobile = new DAttribute { name = "mobile", type = DType.Tag };
         var range  = new DAttribute { name = "range",  type = DType.Value };
         var owner  = new DAttribute { name = "owner",  type = DType.Collection };
-
-        attributes.SetActive(new[]
-        {
-            mobile,
-            range,
-            owner,
-        });
+        var moved  = new DAttribute { name = "moved",  type = DType.Tag };
 
         var tank = new DObject { name = "tank prefab" };
         AddAttribute(tank, mobile, true);
         AddAttribute(tank, range, 3);
 
         var hand = new DObject { name = "hand of cards" };
-        AddAttribute(hand, owner, new DObject[] { tank });
+        AddAttribute(hand, owner, new List<DObject> { tank });
 
         var cursor = new DObject { name = "cursor" };
-        AddAttribute(cursor, owner, new DObject[] { tank } );
+        AddAttribute(cursor, owner, new List<DObject> { tank } );
         AddAttribute(cursor, mobile, true);
 
-        objects.SetActive(new[]
+        proto = new Proto
         {
-            tank,
-            hand,
-            cursor,
-        });
+            game = new Game
+            {
+                state = new State
+                {
+                    objects = new List<DObject> { tank, hand, cursor },
+                },
+
+                rules = new Rules
+                {
+                    attributes = new []
+                    {
+                        mobile,
+                        range,
+                        owner,
+                        moved,
+                    },
+                },
+            },
+
+            actions = new List<DAction>
+            {
+                new DAction
+                {
+                    name = "move",
+                    valid = @object => HasAttribute(@object, mobile),
+                    able = @object => !HasAttribute(@object, moved),
+                    perform = @object => AddAttribute(@object, moved, true),
+                },
+            },
+        };
+
+        StartCoroutine(Test1());
+    }
+
+    private void Refresh()
+    {
+        attributes.SetActive(proto.game.rules.attributes);
+        objects.SetActive(proto.game.state.objects);
+    }
+
+    private IEnumerator Test1()
+    {
+        while (true)
+        {
+            ActionsAreAvailable();
+            Refresh();
+
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    private bool ActionsAreAvailable()
+    {
+        foreach (DAction action in proto.actions)
+        {
+            foreach (DObject @object in proto.game.state.objects)
+            {
+                if (action.valid(@object)
+                 && action.able(@object))
+                {
+                    Debug.LogFormat("doing {0} on {1}", action.name, @object.name);
+
+                    action.perform(@object);
+
+                    return true;
+                }
+            }
+        }
+
+        Debug.Log("No actions are available.");
+
+        return false;
+    }
+
+    private bool HasAttribute(DObject @object, DAttribute tag)
+    {
+        return @object.attributes.ContainsKey(tag);
     }
 
     private void AddAttribute(DObject @object,
@@ -134,7 +203,7 @@ public class Test : MonoBehaviour
 
         if (collection)
         {
-            var objs = value.GetValue<DObject[]>();
+            var objs = value.GetValue<List<DObject>>();
 
             objects.MapActive((obj, element) => element.highlighted = objs.Contains(obj));
         }
@@ -150,7 +219,7 @@ public class Test : MonoBehaviour
     {
         if (value.attribute.type == DType.Collection)
         {
-            var objs = value.GetValue<DObject[]>();
+            var objs = value.GetValue<List<DObject>>();
 
             return string.Join(", ", objs.Select(obj => obj.name).ToArray());
         }
