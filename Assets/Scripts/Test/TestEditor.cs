@@ -25,54 +25,68 @@ public class TestEditor : MonoBehaviour
         {
             new AST.Line
             {
-                start = new AST.Component("next", "variable", AST.Type.Position),
-                command = new AST.Component("first", "command", AST.Type.Position),
                 arguments = new []
                 {
+                    new AST.Component("set"),
+                    new AST.Component("next", "variable", AST.Type.Position),
+                    new AST.Component("to"),
+                    new AST.Component("the first <i>position</i> in"),
                     new AST.Component("path", "sequence", AST.Type.Position, true),
                 },
             },
 
             new AST.Line
             {
-                start = new AST.Component("rest", "variable", AST.Type.Position, true),
-                command = new AST.Component("skip", "command", AST.Type.Position, true),
                 arguments = new []
                 {
+                    new AST.Component("set"),
+                    new AST.Component("rest", "variable", AST.Type.Position, true),
+                    new AST.Component("to"),
                     new AST.Component("path", "sequence", AST.Type.Position, true),
+                    new AST.Component("after skipping"),
                     new AST.Component("1", "count", AST.Type.Number),
+                    new AST.Component("<i>position</i>"),
                 },
             },
 
             new AST.Line
             {
-                start = new AST.Component("unblocked", "variable", AST.Type.Boolean),
-                command = new AST.Component("canmove", "command", AST.Type.Boolean),
                 arguments = new []
                 {
+                    new AST.Component("set"),
+                    new AST.Component("unblocked", "variable", AST.Type.Boolean),
+                    new AST.Component("to"),
+                    new AST.Component("whether"),
                     new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("can reach"),
                     new AST.Component("next", "destination", AST.Type.Position),
                 },
             },
 
             new AST.Line
             {
-                start = new AST.Component("unblocked", "condition", AST.Type.Boolean),
-                command = new AST.Component("move", "command", AST.Type.Action),
                 arguments = new []
                 {
+                    new AST.Component("if"),
+                    new AST.Component("unblocked", "condition", AST.Type.Boolean),
+                    new AST.Component("then"),
+                    new AST.Component("move"),
                     new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("to"),
                     new AST.Component("next", "destination", AST.Type.Position),
                 },
             },
 
             new AST.Line
             {
-                start = new AST.Component("unblocked", "condition", AST.Type.Boolean),
-                command = new AST.Component("follow", "command", AST.Type.Action),
                 arguments = new []
                 {
+                    new AST.Component("if"),
+                    new AST.Component("unblocked", "condition", AST.Type.Boolean),
+                    new AST.Component("then"),
+                    new AST.Component("have"),
                     new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("follow"),
                     new AST.Component("rest", "path", AST.Type.Position, true),
                 },
             },

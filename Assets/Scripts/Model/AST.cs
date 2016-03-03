@@ -24,9 +24,10 @@ namespace AST
 
     public class Component
     {
+        public string comment;
+
         public FullType type;
         public string name;
-        public string role;
 
         public Component(string name,
                          string role,
@@ -34,19 +35,21 @@ namespace AST
                          bool collection = false)
         {
             this.name = name;
-            this.role = role;
             this.type = new FullType
             {
                 type = type,
                 collection = collection,
             };
         }
+
+        public Component(string comment)
+        {
+            this.comment = comment;
+        }
     }
 
     public class Line
     {
-        public Component start;
-        public Component command;
         public Component[] arguments;
     }
 }

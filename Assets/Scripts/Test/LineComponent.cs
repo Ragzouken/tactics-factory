@@ -7,10 +7,14 @@ using System.Collections.Generic;
 
 public class LineComponent : MonoBehaviour 
 {
-    [Header("UI")]
+    [Header("Reference")]
+    [SerializeField] private GameObject referenceObject;
     [SerializeField] private Image typeImage;
     [SerializeField] private Text nameText;
-    [SerializeField] private Text roleText;
+
+    [Header("Comment")]
+    [SerializeField] private GameObject commentObject;
+    [SerializeField] private Text commentText;
 
     [Header("Types")]
     [SerializeField] private Color singleColor;
@@ -38,11 +42,20 @@ public class LineComponent : MonoBehaviour
 
     public void Setup(AST.Component component)
     {
-        typeImage.sprite = sprites[component.type.type];
-        typeImage.color = component.type.collection ? collectionColor 
-                                                    : singleColor;
+        if (component.comment == null)
+        {
+            typeImage.sprite = sprites[component.type.type];
+            typeImage.color = component.type.collection ? collectionColor
+                                                        : singleColor;
 
-        nameText.text = component.name;
-        roleText.text = component.role;
+            nameText.text = component.name;
+        }
+        else
+        {
+            commentText.text = component.comment;
+        }
+
+        referenceObject.SetActive(component.comment == null);
+        commentObject.SetActive(component.comment != null);
     }
 }
