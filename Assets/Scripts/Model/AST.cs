@@ -30,7 +30,6 @@ namespace AST
         public string name;
 
         public Component(string name,
-                         string role,
                          Type type,
                          bool collection = false)
         {

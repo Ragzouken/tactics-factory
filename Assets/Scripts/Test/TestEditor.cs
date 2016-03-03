@@ -28,10 +28,10 @@ public class TestEditor : MonoBehaviour
                 arguments = new []
                 {
                     new AST.Component("set"),
-                    new AST.Component("next", "variable", AST.Type.Position),
+                    new AST.Component("next", AST.Type.Position),
                     new AST.Component("to"),
                     new AST.Component("the first <i>position</i> in"),
-                    new AST.Component("path", "sequence", AST.Type.Position, true),
+                    new AST.Component("path", AST.Type.Position, true),
                 },
             },
 
@@ -40,11 +40,11 @@ public class TestEditor : MonoBehaviour
                 arguments = new []
                 {
                     new AST.Component("set"),
-                    new AST.Component("rest", "variable", AST.Type.Position, true),
+                    new AST.Component("rest", AST.Type.Position, true),
                     new AST.Component("to"),
-                    new AST.Component("path", "sequence", AST.Type.Position, true),
+                    new AST.Component("path", AST.Type.Position, true),
                     new AST.Component("after skipping"),
-                    new AST.Component("1", "count", AST.Type.Number),
+                    new AST.Component("1", AST.Type.Number),
                     new AST.Component("<i>position</i>"),
                 },
             },
@@ -54,12 +54,12 @@ public class TestEditor : MonoBehaviour
                 arguments = new []
                 {
                     new AST.Component("set"),
-                    new AST.Component("unblocked", "variable", AST.Type.Boolean),
+                    new AST.Component("unblocked", AST.Type.Boolean),
                     new AST.Component("to"),
                     new AST.Component("whether"),
-                    new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("vehicle", AST.Type.Object),
                     new AST.Component("can reach"),
-                    new AST.Component("next", "destination", AST.Type.Position),
+                    new AST.Component("next", AST.Type.Position),
                 },
             },
 
@@ -68,12 +68,12 @@ public class TestEditor : MonoBehaviour
                 arguments = new []
                 {
                     new AST.Component("if"),
-                    new AST.Component("unblocked", "condition", AST.Type.Boolean),
+                    new AST.Component("unblocked", AST.Type.Boolean),
                     new AST.Component("then"),
                     new AST.Component("move"),
-                    new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("vehicle", AST.Type.Object),
                     new AST.Component("to"),
-                    new AST.Component("next", "destination", AST.Type.Position),
+                    new AST.Component("next", AST.Type.Position),
                 },
             },
 
@@ -82,12 +82,12 @@ public class TestEditor : MonoBehaviour
                 arguments = new []
                 {
                     new AST.Component("if"),
-                    new AST.Component("unblocked", "condition", AST.Type.Boolean),
+                    new AST.Component("unblocked", AST.Type.Boolean),
                     new AST.Component("then"),
                     new AST.Component("have"),
-                    new AST.Component("vehicle", "mover", AST.Type.Object),
+                    new AST.Component("vehicle", AST.Type.Object),
                     new AST.Component("follow"),
-                    new AST.Component("rest", "path", AST.Type.Position, true),
+                    new AST.Component("rest", AST.Type.Position, true),
                 },
             },
         });
