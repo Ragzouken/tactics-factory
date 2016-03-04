@@ -51,4 +51,11 @@ namespace AST
     {
         public Component[] arguments;
     }
+
+    public class Function
+    {
+        public string name;
+        public Line signature;
+        public List<Line> definition;
+    }
 }
