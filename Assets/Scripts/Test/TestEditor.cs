@@ -14,6 +14,7 @@ public class TestEditor : MonoBehaviour
     [SerializeField] private LineElement linePrefab;
     [SerializeField] private Button addLineButton;
     [SerializeField] private Button insertButton;
+    [SerializeField] private GameObject insertIconObject;
     [SerializeField] private RectTransform gutter;
 
     private MonoBehaviourPooler<AST.Line, LineElement> lines;
@@ -164,6 +165,7 @@ public class TestEditor : MonoBehaviour
         show |= dragging != null;
 
         insertButton.gameObject.SetActive(show && hoveredLine != null);
+        insertIconObject.gameObject.SetActive(dragging == null);
 
         lines.MapActive((l, p) => p.bordered = l == dragging);
     }
@@ -204,9 +206,13 @@ public class TestEditor : MonoBehaviour
 
     public void DropLine()
     {
+        if (dragging == null) return;
+
         function.definition.Remove(dragging);
         int index = function.definition.IndexOf(hoveredLine);
         function.definition.Insert(index + (hoveredAbove ? 0 : 1), dragging);
+
+        EndDrag(dragging);
 
         SetFunction(function);
     }
