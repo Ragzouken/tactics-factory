@@ -54,6 +54,6 @@ public class LineElement : MonoBehaviour,
 
     void IDropHandler.OnDrop(PointerEventData eventData)
     {
-        editor.SwapLine(line);
+        editor.DropLine();
     }
 }

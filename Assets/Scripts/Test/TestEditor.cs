@@ -141,7 +141,8 @@ public class TestEditor : MonoBehaviour
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rtrans, Input.mousePosition, null, out point);
 
             var rect = rtrans.rect;
-            rect.height += 4;
+            rect.y -= 4;
+            rect.height += 8;
 
             bool inside = rect.Contains(point);
 
@@ -160,9 +161,9 @@ public class TestEditor : MonoBehaviour
             }
         }
 
-        Debug.LogFormat("Hovered Line {0} Above? {1}", hoveredLine, hoveredAbove);
+        show |= dragging != null;
 
-        insertButton.gameObject.SetActive(show);
+        insertButton.gameObject.SetActive(show && hoveredLine != null);
     }
 
     public void SetFunction(AST.Function function)
@@ -172,7 +173,6 @@ public class TestEditor : MonoBehaviour
         signature.Setup(function.signature);
         lines.SetActive(function.definition);
 
-        insertButton.transform.SetAsLastSibling();
         addLineButton.transform.SetAsLastSibling();
     }
 
@@ -200,12 +200,11 @@ public class TestEditor : MonoBehaviour
         SetFunction(function);
     }
 
-    public void SwapLine(AST.Line line)
+    public void DropLine()
     {
         function.definition.Remove(dragging);
-        int index = function.definition.IndexOf(line);
-        function.definition.Insert(index + 1, dragging);
-        EndDrag(dragging);
+        int index = function.definition.IndexOf(hoveredLine);
+        function.definition.Insert(index + (hoveredAbove ? 0 : 1), dragging);
 
         SetFunction(function);
     }
@@ -225,16 +224,6 @@ public class TestEditor : MonoBehaviour
         });
 
         SetFunction(function);
-    }
-
-    public void OnHoverGutterBegin()
-    {
-        insertButton.gameObject.SetActive(true);
-    }
-
-    public void OnHoverGutterEnd()
-    {
-        insertButton.gameObject.SetActive(false);
     }
 
     public void InsertLine()
