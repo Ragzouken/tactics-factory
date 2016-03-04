@@ -164,6 +164,8 @@ public class TestEditor : MonoBehaviour
         show |= dragging != null;
 
         insertButton.gameObject.SetActive(show && hoveredLine != null);
+
+        lines.MapActive((l, p) => p.bordered = l == dragging);
     }
 
     public void SetFunction(AST.Function function)

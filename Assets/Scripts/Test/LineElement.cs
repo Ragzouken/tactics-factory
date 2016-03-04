@@ -21,6 +21,16 @@ public class LineElement : MonoBehaviour,
     [SerializeField] private Color ruleColor;
     [SerializeField] private Color actionColor;
 
+    [SerializeField] private GameObject draggingBorder;
+
+    public bool bordered
+    {
+        set
+        {
+            draggingBorder.SetActive(value);
+        }
+    }
+
     private MonoBehaviourPooler<AST.Component, LineComponent> arguments;
 
     private AST.Line line;
