@@ -1,10 +1,9 @@
 fileFormatVersion: 2
-guid: db65e79d7d22c024fba83b2d36e80a99
-timeCreated: 1457107109
+guid: 3506f2df1d1c76147b076e9bf5dbedac
+timeCreated: 1457107328
 licenseType: Free
 TextureImporter:
-  fileIDToRecycleName:
-    21300000: insert_0
+  fileIDToRecycleName: {}
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -39,7 +38,7 @@ TextureImporter:
   rGBM: 0
   compressionQuality: 50
   allowsAlphaSplitting: 0
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 9
@@ -50,18 +49,7 @@ TextureImporter:
   textureType: 8
   buildTargetSettings: []
   spriteSheet:
-    sprites:
-    - name: insert_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 13
-        height: 24
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 12, w: 0}
-      outline: []
+    sprites: []
     outline: []
   spritePackingTag: ui
   userData: 
