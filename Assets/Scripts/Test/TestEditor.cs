@@ -8,6 +8,8 @@ using System.Collections.Generic;
 
 public class TestEditor : MonoBehaviour 
 {
+    [SerializeField] private SelectorPopup selector;
+
     [SerializeField] private GameObject trashObject;
     [SerializeField] private LineElement signature;
     [SerializeField] private RectTransform lineContainer;
@@ -16,6 +18,9 @@ public class TestEditor : MonoBehaviour
     [SerializeField] private Button insertButton;
     [SerializeField] private GameObject insertIconObject;
     [SerializeField] private RectTransform gutter;
+
+    [SerializeField] private Sprite positionIcon;
+    [SerializeField] private Sprite numberIcon;
 
     private MonoBehaviourPooler<AST.Line, LineElement> lines;
 
@@ -121,10 +126,36 @@ public class TestEditor : MonoBehaviour
         };
 
         SetFunction(function);
+
+        selector.SetCategories(new[]
+        {
+            new SelectorPopup.Category
+            {
+                title = "positions",
+                items = new []
+                {
+                    new SelectorPopup.Item { name = "next", icon = positionIcon },
+                    new SelectorPopup.Item { name = "prev", icon = positionIcon },
+                    new SelectorPopup.Item { name = "here", icon = positionIcon },
+                },
+            },
+
+            new SelectorPopup.Category
+            {
+                title = "numbers",
+                items = new []
+                {
+                    new SelectorPopup.Item { name = "distance", icon = numberIcon },
+                    new SelectorPopup.Item { name = "range", icon = numberIcon },
+                },
+            }
+        });
     }
 
     private AST.Line hoveredLine;
     private bool hoveredAbove;
+
+    private float velocity;
 
     private void Update()
     {
@@ -153,6 +184,9 @@ public class TestEditor : MonoBehaviour
 
                 Vector3 pos = insertButton.transform.position;
                 pos.y = rtrans.position.y + (above ? 14 : -14);
+
+                //pos.y = Mathf.SmoothDamp(pos.y, rtrans.position.y + (above ? 14 : -14), ref velocity, 0.1f);
+
                 insertButton.transform.position = pos;
 
                 hoveredLine = line;

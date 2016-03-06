@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 public class Test : MonoBehaviour 
 {
+    [SerializeField] private SelectorPopup selector;
+
     [SerializeField] private ListElement elementPrefab;
     [SerializeField] private RectTransform attributesContainer;
     [SerializeField] private RectTransform objectsContainer;
