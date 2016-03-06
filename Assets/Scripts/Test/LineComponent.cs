@@ -7,7 +7,10 @@ using System.Collections.Generic;
 
 public class LineComponent : MonoBehaviour 
 {
+    [SerializeField] private TestEditor editor;
+
     [Header("Reference")]
+    [SerializeField] private Button referenceEditButton;
     [SerializeField] private GameObject referenceObject;
     [SerializeField] private Image typeImage;
     [SerializeField] private Text nameText;
@@ -28,6 +31,8 @@ public class LineComponent : MonoBehaviour
 
     private Dictionary<AST.Type, Sprite> sprites;
 
+    private AST.Component component;
+
     private void Awake()
     {
         sprites = new Dictionary<AST.Type, Sprite>
@@ -38,9 +43,18 @@ public class LineComponent : MonoBehaviour
             { AST.Type.Position, positionSprite },
             { AST.Type.Action,   actionSprite   },
         };
+
+        referenceEditButton.onClick.AddListener(() => editor.EditComponent(component));
     }
 
     public void Setup(AST.Component component)
+    {
+        this.component = component;
+
+        Refresh();
+    }
+
+    public void Refresh()
     {
         if (component.comment == null)
         {

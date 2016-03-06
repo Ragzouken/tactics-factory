@@ -50,6 +50,22 @@ namespace AST
     public class Line
     {
         public Component[] arguments;
+
+        public bool assignment
+        {
+            get
+            {
+                return arguments[0].comment == "set";
+            }
+        }
+
+        public Component destination
+        {
+            get
+            {
+                return arguments[1];
+            }
+        }
     }
 
     public class Function
@@ -57,5 +73,17 @@ namespace AST
         public string name;
         public Line signature;
         public List<Line> definition;
+
+        public IEnumerable<Component> GetLocalsFor(Line call)
+        {
+            int index = definition.IndexOf(call);
+
+            for (int i = 0; i < index; ++i)
+            {
+                var line = definition[i];
+
+                if (line.assignment) yield return line.destination;
+            }
+        }
     }
 }

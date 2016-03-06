@@ -21,6 +21,9 @@ public class TestEditor : MonoBehaviour
 
     [SerializeField] private Sprite positionIcon;
     [SerializeField] private Sprite numberIcon;
+    [SerializeField] private Sprite boolIcon;
+    [SerializeField] private Sprite objectIcon;
+    [SerializeField] private Color collectionColor;
 
     private MonoBehaviourPooler<AST.Line, LineElement> lines;
 
@@ -127,29 +130,7 @@ public class TestEditor : MonoBehaviour
 
         SetFunction(function);
 
-        selector.SetCategories(new[]
-        {
-            new SelectorPopup.Category
-            {
-                title = "positions",
-                items = new []
-                {
-                    new SelectorPopup.Item { name = "next", icon = positionIcon },
-                    new SelectorPopup.Item { name = "prev", icon = positionIcon },
-                    new SelectorPopup.Item { name = "here", icon = positionIcon },
-                },
-            },
-
-            new SelectorPopup.Category
-            {
-                title = "numbers",
-                items = new []
-                {
-                    new SelectorPopup.Item { name = "distance", icon = numberIcon },
-                    new SelectorPopup.Item { name = "range", icon = numberIcon },
-                },
-            }
-        });
+        EditComponent(function.definition[3], 6);
     }
 
     private AST.Line hoveredLine;
@@ -212,6 +193,83 @@ public class TestEditor : MonoBehaviour
         lines.SetActive(function.definition);
 
         addLineButton.transform.SetAsLastSibling();
+    }
+
+    public void EditComponent(AST.Component component)
+    {
+        var line = lines.Shortcuts.First(l => l.arguments.Contains(component));
+
+        selector.gameObject.SetActive(true);
+
+        EditComponent(line, line.arguments.ToList().IndexOf(component));
+    }
+
+    public void EditComponent(AST.Line line, int index)
+    {
+        System.Func<AST.Component, System.Action> makething = (AST.Component component) =>
+        {
+            return () =>
+            {
+                line.arguments[index] = new AST.Component(component.name, component.type.type, component.type.collection);
+                lines.Get(line).Refresh();
+                selector.gameObject.SetActive(false);
+            };
+        };
+
+        var components = function.GetLocalsFor(line)
+                                 .Concat(function.signature.arguments.Where(c => c.comment == null))
+                                 .ToArray();
+        
+        selector.SetCategories(new[]
+        {
+            new SelectorPopup.Category
+            {
+                title = "positions",
+                items = components.Where(component => component.type.type == AST.Type.Position)
+                                  .Select(component => new SelectorPopup.Item { name = component.name,
+                                                                                  icon = positionIcon,
+                                                                                  color = component.type.collection ? collectionColor
+                                                                                                                    : Color.white,
+                                                                                  action = makething(component) })
+                                  .ToArray(),
+            },
+
+            new SelectorPopup.Category
+            {
+                title = "numbers",
+                items = components.Where(component => component.type.type == AST.Type.Number)
+                                .Select(component => new SelectorPopup.Item { name = component.name,
+                                                                              icon = numberIcon,
+                                                                              color = component.type.collection ? collectionColor
+                                                                                                                : Color.white,
+                                                                              action = makething(component) })
+                                .ToArray(),
+            },
+
+            new SelectorPopup.Category
+            {
+                title = "booleans",
+                items = components.Where(component => component.type.type == AST.Type.Boolean)
+                                .Select(component => new SelectorPopup.Item { name = component.name,
+                                                                              icon = boolIcon,
+                                                                              color = component.type.collection ? collectionColor
+                                                                                                                : Color.white,
+                                                                              action = makething(component) })
+                                .ToArray(),
+            },
+
+            new SelectorPopup.Category
+            {
+                title = "objects",
+                items = components.Where(component => component.type.type == AST.Type.Object)
+                                  .Select(component => new SelectorPopup.Item { name = component.name,
+                                                                                icon = objectIcon,
+                                                                                color = component.type.collection ? collectionColor
+                                                                                                                  : Color.white,
+                                                                                action = makething(component) })
+                                  .ToArray(),
+            },
+        });
     }
 
     private AST.Line dragging;

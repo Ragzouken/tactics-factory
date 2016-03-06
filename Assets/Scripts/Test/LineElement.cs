@@ -46,10 +46,16 @@ public class LineElement : MonoBehaviour,
     {
         this.line = line;
 
+        Refresh();
+    }
+
+    public void Refresh()
+    {
         if (line.arguments[0].comment == "if") background.color = actionColor;
         if (line.arguments[0].comment == "set") background.color = ruleColor;
 
         arguments.SetActive(line.arguments);
+        arguments.MapActive((a, c) => c.Refresh());
     }
 
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)

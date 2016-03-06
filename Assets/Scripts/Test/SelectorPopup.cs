@@ -12,7 +12,8 @@ public class SelectorPopup : MonoBehaviour
     {
         public string name;
         public Sprite icon;
-        public Action action; 
+        public Action action;
+        public Color color = Color.white;
     }
 
     public class Category

@@ -23,6 +23,7 @@ public class SelectorElement : MonoBehaviour
         this.item = item;
 
         iconImage.sprite = item.icon;
+        iconImage.color = item.color;
         iconImage.gameObject.SetActive(item.icon != null);
 
         labelText.text = item.name;
