@@ -225,7 +225,22 @@ public class TestEditor : MonoBehaviour
 
         text.AppendLine(string.Join("\n", function.body.Select(line => line.ToString()).ToArray()));
 
+        var replacements = new Dictionary<AST.Reference, string>();
+
+        foreach (var line in function.body)
+        {
+            var args = string.Join(", ",
+                                   line.inputs
+                                       .Skip(1)
+                                       .Select(r => (replacements.ContainsKey(r) ? replacements[r] : r.name))
+                                       .ToArray());
+            var final = string.Format("{0}({1})", line.function.name, args);
+
+            replacements[line.inputs[0]] = final;
+        }
+
         Debug.Log(text.ToString());
+        Debug.Log(replacements[function.body.Last().inputs[0]]);
     }
 
     public void EditInput(AST.Line line, int index)
