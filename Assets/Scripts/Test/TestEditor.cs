@@ -30,8 +30,8 @@ public class TestEditor : MonoBehaviour
     private void Awake()
     {
         lines = new MonoBehaviourPooler<AST.Line, LineElement>(linePrefab,
-                                                               lineContainer,
-                                                               (l, e) => e.Setup(l));
+                                                                lineContainer,
+                                                                (l, e) => e.Setup(l));
 
         addLineButton.onClick.AddListener(AddLine);
         insertButton.onClick.AddListener(InsertLine);
@@ -40,97 +40,112 @@ public class TestEditor : MonoBehaviour
     }
 
     private AST.Function function;
+    private AST.Function[] functions;
 
     private void Start()
     {
-        var function = new AST.Function
+        var NUMBER = new AST.FullType { type = AST.Type.Number };
+
+        var POSITION = new AST.FullType { type = AST.Type.Position };
+        var POSITIONS = new AST.FullType { type = AST.Type.Position, collection = true };
+
+        var OBJECT = new AST.FullType { type = AST.Type.Object };
+
+        var BOOLEAN = new AST.FullType { type = AST.Type.Boolean };
+
+        var element = new AST.Function
         {
-            name = "follow path",
-            signature = new AST.Line
+            name = "element",
+            signature = new[]
             {
-                arguments = new[]
-                {
-                    new AST.Component("have"),
-                    new AST.Component("vehicle", AST.Type.Object),
-                    new AST.Component("follow"),
-                    new AST.Component("path", AST.Type.Position, true),
-                },
-            },
-            definition = new List<AST.Line>
-        {
-            new AST.Line
-            {
-                arguments = new []
-                {
-                    new AST.Component("set"),
-                    new AST.Component("next", AST.Type.Position),
-                    new AST.Component("to"),
-                    new AST.Component("the first <i>position</i> in"),
-                    new AST.Component("path", AST.Type.Position, true),
-                },
+                new AST.Reference("@result",  POSITION),
+                new AST.Reference("offset",   NUMBER),
+                new AST.Reference("sequence", POSITIONS),
             },
 
-            new AST.Line
-            {
-                arguments = new []
-                {
-                    new AST.Component("set"),
-                    new AST.Component("rest", AST.Type.Position, true),
-                    new AST.Component("to"),
-                    new AST.Component("path", AST.Type.Position, true),
-                    new AST.Component("after skipping"),
-                    new AST.Component("1", AST.Type.Number),
-                    new AST.Component("<i>position</i>"),
-                },
-            },
-
-            new AST.Line
-            {
-                arguments = new []
-                {
-                    new AST.Component("set"),
-                    new AST.Component("unblocked", AST.Type.Boolean),
-                    new AST.Component("to"),
-                    new AST.Component("whether"),
-                    new AST.Component("vehicle", AST.Type.Object),
-                    new AST.Component("can reach"),
-                    new AST.Component("next", AST.Type.Position),
-                },
-            },
-
-            new AST.Line
-            {
-                arguments = new []
-                {
-                    new AST.Component("if"),
-                    new AST.Component("unblocked", AST.Type.Boolean),
-                    new AST.Component("then"),
-                    new AST.Component("move"),
-                    new AST.Component("vehicle", AST.Type.Object),
-                    new AST.Component("to"),
-                    new AST.Component("next", AST.Type.Position),
-                },
-            },
-
-            new AST.Line
-            {
-                arguments = new []
-                {
-                    new AST.Component("if"),
-                    new AST.Component("unblocked", AST.Type.Boolean),
-                    new AST.Component("then"),
-                    new AST.Component("have"),
-                    new AST.Component("vehicle", AST.Type.Object),
-                    new AST.Component("follow"),
-                    new AST.Component("rest", AST.Type.Position, true),
-                },
-            },
-        }
+            comments = new[] { "element", "within", "" },
         };
 
-        SetFunction(function);
+        var canpass = new AST.Function
+        {
+            name = "pass",
+            signature = new[]
+            {
+                new AST.Reference("@result", BOOLEAN),
+                new AST.Reference("vehicle", OBJECT),
+                new AST.Reference("from",    POSITION),
+                new AST.Reference("to",      POSITION),
+            },
 
-        EditComponent(function.definition[3], 6);
+            comments = new[] { "whether", "could pass from", "to", "" },
+        };
+
+        var skip = new AST.Function
+        {
+            name = "skip",
+            signature = new[]
+            {
+                new AST.Reference("@result",  POSITIONS),
+                new AST.Reference("sequence", POSITIONS),
+                new AST.Reference("count",    NUMBER),
+            },
+
+            comments = new[] { "the elements of", "after skipping", "positions" },
+        };
+
+        var and = new AST.Function
+        {
+            name = "and",
+            signature = new[]
+            {
+                new AST.Reference("@result",  BOOLEAN),
+                new AST.Reference("a", BOOLEAN),
+                new AST.Reference("b", BOOLEAN),
+            },
+
+            comments = new[] { "whether both", "and", "are true" },
+        };
+
+        var f = new AST.Function
+        {
+            name = "can follow path",
+            signature = new[]
+            {
+                new AST.Reference("@result", BOOLEAN),
+                new AST.Reference("vehicle", OBJECT),
+                new AST.Reference("path",    POSITIONS),
+            },
+
+            comments = new[] { "whether", "can follow", "" },
+        };
+
+        var first  = new AST.Reference("first",  POSITION);
+        var second = new AST.Reference("second", POSITION);
+        var valid  = new AST.Reference("valid",  BOOLEAN);
+        var rest   = new AST.Reference("rest",   POSITIONS);
+        var others = new AST.Reference("others", BOOLEAN);
+        var result = new AST.Reference("result", BOOLEAN);
+
+        f.body = new List<AST.Line>
+        {
+            new AST.Line(element, first,  new AST.Reference("1", NUMBER), f.signature[2]),
+            new AST.Line(element, second, new AST.Reference("2", NUMBER), f.signature[2]),
+            new AST.Line(canpass, valid,  f.signature[1], first, second),
+            new AST.Line(skip,    rest,   f.signature[2], new AST.Reference("1", NUMBER)),
+            new AST.Line(f,       others, f.signature[1], rest),
+            new AST.Line(and,     result, valid, others),
+        };
+
+        functions = new[]
+        {
+            element,
+            canpass,
+            skip,
+            f,
+            and,
+        };
+
+        SetFunction(f);
     }
 
     private AST.Line hoveredLine;
@@ -189,35 +204,28 @@ public class TestEditor : MonoBehaviour
     {
         this.function = function;
 
-        signature.Setup(function.signature);
-        lines.SetActive(function.definition);
+        //signature.Setup(function);
+        lines.SetActive(function.body);
 
         addLineButton.transform.SetAsLastSibling();
     }
 
-    public void EditComponent(AST.Component component)
+    public void EditInput(AST.Line line, int index)
     {
-        var line = lines.Shortcuts.First(l => l.arguments.Contains(component));
-
         selector.gameObject.SetActive(true);
 
-        EditComponent(line, line.arguments.ToList().IndexOf(component));
-    }
-
-    public void EditComponent(AST.Line line, int index)
-    {
-        System.Func<AST.Component, System.Action> makething = (AST.Component component) =>
+        System.Func<AST.Reference, System.Action> makething = (AST.Reference reference) =>
         {
             return () =>
             {
-                line.arguments[index] = new AST.Component(component.name, component.type.type, component.type.collection);
+                line.inputs[index] = reference;
                 lines.Get(line).Refresh();
                 selector.gameObject.SetActive(false);
             };
         };
 
         var components = function.GetLocalsFor(line)
-                                 .Concat(function.signature.arguments.Where(c => c.comment == null))
+                                 .Concat(function.signature)
                                  .ToArray();
         
         selector.SetCategories(new[]
@@ -225,48 +233,48 @@ public class TestEditor : MonoBehaviour
             new SelectorPopup.Category
             {
                 title = "positions",
-                items = components.Where(component => component.type.type == AST.Type.Position)
-                                  .Select(component => new SelectorPopup.Item { name = component.name,
-                                                                                  icon = positionIcon,
-                                                                                  color = component.type.collection ? collectionColor
-                                                                                                                    : Color.white,
-                                                                                  action = makething(component) })
+                items = components.Where(reference => reference.type.type == AST.Type.Position)
+                                  .Select(reference => new SelectorPopup.Item { name = reference.name,
+                                                                                icon = positionIcon,
+                                                                                color = reference.type.collection ? collectionColor
+                                                                                                                  : Color.white,
+                                                                                action = makething(reference) })
                                   .ToArray(),
             },
 
             new SelectorPopup.Category
             {
                 title = "numbers",
-                items = components.Where(component => component.type.type == AST.Type.Number)
-                                .Select(component => new SelectorPopup.Item { name = component.name,
+                items = components.Where(reference => reference.type.type == AST.Type.Number)
+                                .Select(reference => new SelectorPopup.Item { name = reference.name,
                                                                               icon = numberIcon,
-                                                                              color = component.type.collection ? collectionColor
+                                                                              color = reference.type.collection ? collectionColor
                                                                                                                 : Color.white,
-                                                                              action = makething(component) })
+                                                                              action = makething(reference) })
                                 .ToArray(),
             },
 
             new SelectorPopup.Category
             {
                 title = "booleans",
-                items = components.Where(component => component.type.type == AST.Type.Boolean)
-                                .Select(component => new SelectorPopup.Item { name = component.name,
+                items = components.Where(reference => reference.type.type == AST.Type.Boolean)
+                                .Select(reference => new SelectorPopup.Item { name = reference.name,
                                                                               icon = boolIcon,
-                                                                              color = component.type.collection ? collectionColor
+                                                                              color = reference.type.collection ? collectionColor
                                                                                                                 : Color.white,
-                                                                              action = makething(component) })
+                                                                              action = makething(reference) })
                                 .ToArray(),
             },
 
             new SelectorPopup.Category
             {
                 title = "objects",
-                items = components.Where(component => component.type.type == AST.Type.Object)
-                                  .Select(component => new SelectorPopup.Item { name = component.name,
+                items = components.Where(reference => reference.type.type == AST.Type.Object)
+                                  .Select(reference => new SelectorPopup.Item { name = reference.name,
                                                                                 icon = objectIcon,
-                                                                                color = component.type.collection ? collectionColor
+                                                                                color = reference.type.collection ? collectionColor
                                                                                                                   : Color.white,
-                                                                                action = makething(component) })
+                                                                                action = makething(reference) })
                                   .ToArray(),
             },
         });
@@ -290,7 +298,7 @@ public class TestEditor : MonoBehaviour
 
     public void DeleteLine()
     {
-        function.definition.Remove(dragging);
+        function.body.Remove(dragging);
         EndDrag(dragging);
 
         SetFunction(function);
@@ -300,9 +308,9 @@ public class TestEditor : MonoBehaviour
     {
         if (dragging == null) return;
 
-        function.definition.Remove(dragging);
-        int index = function.definition.IndexOf(hoveredLine);
-        function.definition.Insert(index + (hoveredAbove ? 0 : 1), dragging);
+        function.body.Remove(dragging);
+        int index = function.body.IndexOf(hoveredLine);
+        function.body.Insert(index + (hoveredAbove ? 0 : 1), dragging);
 
         EndDrag(dragging);
 
@@ -311,17 +319,19 @@ public class TestEditor : MonoBehaviour
 
     public void AddLine()
     {
-        function.definition.Add(new AST.Line
+        /*
+        function.function.definition.Add(new AST.Line
         {
             arguments = new[]
-                {
-                    new AST.Component("set"),
-                    new AST.Component("next", AST.Type.Position),
-                    new AST.Component("to"),
-                    new AST.Component("the first <i>position</i> in"),
-                    new AST.Component("path", AST.Type.Position, true),
-                },
+            {
+                new AST.Component("set"),
+                new AST.Component("next", AST.Type.Position),
+                new AST.Component("to"),
+                new AST.Component("the first <i>position</i> in"),
+                new AST.Component("path", AST.Type.Position, true),
+            },
         });
+        */
 
         SetFunction(function);
     }
@@ -330,6 +340,7 @@ public class TestEditor : MonoBehaviour
     {
         Assert.IsNotNull(hoveredLine, "No line hovered to insert relative to!");
 
+        /*
         var line = new AST.Line
         {
             arguments = new[]
@@ -342,8 +353,9 @@ public class TestEditor : MonoBehaviour
             },
         };
 
-        int index = function.definition.IndexOf(hoveredLine);
-        function.definition.Insert(index + (hoveredAbove ? 0 : 1), line);
+        int index = function.body.IndexOf(hoveredLine);
+        function.body.Insert(index + (hoveredAbove ? 0 : 1), line);
+        */
 
         SetFunction(function);
     }

@@ -25,45 +25,71 @@ namespace AST
     public class Component
     {
         public string comment;
+        public Reference reference;
+        public Line line;
+        public int index;
 
-        public FullType type;
-        public string name;
-
-        public Component(string name,
-                         Type type,
-                         bool collection = false)
+        public Component(Reference reference, Line line, int index)
         {
-            this.name = name;
-            this.type = new FullType
-            {
-                type = type,
-                collection = collection,
-            };
+            this.reference = reference;
+            this.line = line;
+            this.index = index;
         }
 
-        public Component(string comment)
+        public Component(string comment, Line line)
         {
             this.comment = comment;
+            this.line = line;
+            this.index = -1;
+        }
+    }
+
+    public class Reference
+    {
+        public string name;
+        public FullType type;
+
+        public Reference(string name, FullType type)
+        {
+            this.name = name;
+            this.type = type;
         }
     }
 
     public class Line
     {
-        public Component[] arguments;
+        public Function function;
+        public Reference[] inputs;
+
+        public Line(Function function, params Reference[] inputs)
+        {
+            this.function = function;
+            this.inputs = inputs;
+        }
+
+        public IEnumerable<Component> components
+        {
+            get
+            {
+                yield return new Component("set", this);
+                yield return new Component(inputs[0], this, 0);
+                yield return new Component("to", this);
+
+                yield return new Component(function.comments[0], this);
+
+                for (int i = 1; i < function.signature.Length; ++i)
+                {
+                    yield return new Component(inputs[i], this, i);
+                    yield return new Component(function.comments[i], this);
+                }
+            }
+        }
 
         public bool assignment
         {
             get
             {
-                return arguments[0].comment == "set";
-            }
-        }
-
-        public Component destination
-        {
-            get
-            {
-                return arguments[1];
+                return !function.action;
             }
         }
     }
@@ -71,18 +97,41 @@ namespace AST
     public class Function
     {
         public string name;
-        public Line signature;
-        public List<Line> definition;
+        public Reference[] signature;
+        public string[] comments;
+        public List<Line> body;
 
-        public IEnumerable<Component> GetLocalsFor(Line call)
+        public IEnumerable<Component> components
         {
-            int index = definition.IndexOf(call);
+            get
+            {
+                yield return new Component(comments[0], null);
+
+                for (int i = 1; i < signature.Length; ++i)
+                {
+                    yield return new Component(signature[i], null, i);
+                    yield return new Component(comments[i], null);
+                }
+            }
+        }
+
+        public IEnumerable<Reference> GetLocalsFor(Line call)
+        {
+            int index = body.IndexOf(call);
 
             for (int i = 0; i < index; ++i)
             {
-                var line = definition[i];
+                var line = body[i];
 
-                if (line.assignment) yield return line.destination;
+                if (line.assignment) yield return line.inputs[0];
+            }
+        }
+
+        public bool action
+        {
+            get
+            {
+                return false;
             }
         }
     }

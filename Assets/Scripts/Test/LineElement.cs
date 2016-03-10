@@ -51,10 +51,10 @@ public class LineElement : MonoBehaviour,
 
     public void Refresh()
     {
-        if (line.arguments[0].comment == "if") background.color = actionColor;
-        if (line.arguments[0].comment == "set") background.color = ruleColor;
+        if (!line.assignment) background.color = actionColor;
+        if (line.assignment) background.color = ruleColor;
 
-        arguments.SetActive(line.arguments);
+        arguments.SetActive(line.components);
         arguments.MapActive((a, c) => c.Refresh());
     }
 

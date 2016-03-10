@@ -44,7 +44,7 @@ public class LineComponent : MonoBehaviour
             { AST.Type.Action,   actionSprite   },
         };
 
-        referenceEditButton.onClick.AddListener(() => editor.EditComponent(component));
+        referenceEditButton.onClick.AddListener(() => editor.EditInput(component.line, component.index));
     }
 
     public void Setup(AST.Component component)
@@ -58,11 +58,13 @@ public class LineComponent : MonoBehaviour
     {
         if (component.comment == null)
         {
-            typeImage.sprite = sprites[component.type.type];
-            typeImage.color = component.type.collection ? collectionColor
-                                                        : singleColor;
+            var type = component.reference.type;
 
-            nameText.text = component.name;
+            typeImage.sprite = sprites[type.type];
+            typeImage.color = type.collection ? collectionColor
+                                              : singleColor;
+
+            nameText.text = component.reference.name;
         }
         else
         {
