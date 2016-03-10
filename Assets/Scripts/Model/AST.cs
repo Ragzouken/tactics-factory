@@ -20,6 +20,11 @@ namespace AST
     {
         public Type type;
         public bool collection;
+
+        public override string ToString()
+        {
+            return type.ToString() + (collection ? "s" : "");
+        }
     }
 
     public class Component
@@ -54,6 +59,11 @@ namespace AST
             this.name = name;
             this.type = type;
         }
+
+        public override string ToString()
+        {
+            return type + " " + name;
+        }
     }
 
     public class Line
@@ -65,6 +75,11 @@ namespace AST
         {
             this.function = function;
             this.inputs = inputs;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} = {1}({2})", inputs[0].name, function.name, string.Join(", ", inputs.Skip(1).Select(input => input.name).ToArray()));
         }
 
         public IEnumerable<Component> components

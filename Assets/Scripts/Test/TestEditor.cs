@@ -108,7 +108,7 @@ public class TestEditor : MonoBehaviour
 
         var f = new AST.Function
         {
-            name = "can follow path",
+            name = "canfollow",
             signature = new[]
             {
                 new AST.Reference("@result", BOOLEAN),
@@ -208,6 +208,24 @@ public class TestEditor : MonoBehaviour
         lines.SetActive(function.body);
 
         addLineButton.transform.SetAsLastSibling();
+
+        Compile();
+    }
+
+    private void Compile()
+    {
+        var text = new System.Text.StringBuilder();
+
+        var inputs = string.Join(", ", function.signature.Skip(1).Select(input => input.ToString()).ToArray());
+
+        text.AppendFormat("{1} {0}({2})\n", 
+                          function.name,
+                          function.signature[0].type,
+                          inputs);
+
+        text.AppendLine(string.Join("\n", function.body.Select(line => line.ToString()).ToArray()));
+
+        Debug.Log(text.ToString());
     }
 
     public void EditInput(AST.Line line, int index)
