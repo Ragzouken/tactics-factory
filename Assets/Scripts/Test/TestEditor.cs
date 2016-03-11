@@ -53,6 +53,8 @@ public class TestEditor : MonoBehaviour
 
         var BOOLEAN = new AST.FullType { type = AST.Type.Boolean };
 
+        var TRUE = new AST.Value { type = BOOLEAN, value = true };
+
         var element = new AST.Function
         {
             name = "element",
@@ -64,6 +66,8 @@ public class TestEditor : MonoBehaviour
             },
 
             comments = new[] { "element", "within", "" },
+
+            builtin = arguments => arguments[1].AsSequence()[arguments[0].integer - 1],
         };
 
         var canpass = new AST.Function
@@ -78,6 +82,8 @@ public class TestEditor : MonoBehaviour
             },
 
             comments = new[] { "whether", "could pass from", "to", "" },
+
+            builtin = arguments => TRUE,
         };
 
         var skip = new AST.Function
@@ -91,6 +97,8 @@ public class TestEditor : MonoBehaviour
             },
 
             comments = new[] { "the elements of", "after skipping", "positions" },
+
+            builtin = arguments => new AST.Value { type = arguments[0].type, value = arguments[0].sequence.Skip(arguments[1].integer).ToArray() },
         };
 
         var and = new AST.Function
@@ -104,6 +112,8 @@ public class TestEditor : MonoBehaviour
             },
 
             comments = new[] { "whether both", "and", "are true" },
+
+            builtin = arguments => new AST.Value { type = BOOLEAN, value = arguments[0].boolean && arguments[1].boolean },
         };
 
         var f = new AST.Function
@@ -128,10 +138,10 @@ public class TestEditor : MonoBehaviour
 
         f.body = new List<AST.Line>
         {
-            new AST.Line(element, first,  new AST.Reference("1", NUMBER), f.signature[2]),
-            new AST.Line(element, second, new AST.Reference("2", NUMBER), f.signature[2]),
+            new AST.Line(element, first,  new AST.Reference("1", NUMBER, true), f.signature[2]),
+            new AST.Line(element, second, new AST.Reference("2", NUMBER, true), f.signature[2]),
             new AST.Line(canpass, valid,  f.signature[1], first, second),
-            new AST.Line(skip,    rest,   f.signature[2], new AST.Reference("1", NUMBER)),
+            new AST.Line(skip,    rest,   f.signature[2], new AST.Reference("1", NUMBER, true)),
             new AST.Line(f,       others, f.signature[1], rest),
             new AST.Line(and,     result, valid, others),
         };
@@ -212,6 +222,11 @@ public class TestEditor : MonoBehaviour
         Compile();
     }
 
+    private AST.Value Position(int x, int y)
+    {
+        return new AST.Value { type = AST.FullType.POSITION, value = string.Format("({0},{1})", x, y) };
+    }
+
     private void Compile()
     {
         var text = new System.Text.StringBuilder();
@@ -241,6 +256,15 @@ public class TestEditor : MonoBehaviour
 
         Debug.Log(text.ToString());
         Debug.Log(replacements[function.body.Last().inputs[0]]);
+
+        var context = new AST.Context();
+        var value = context.Evaluate(new AST.Invocation(function, new AST.Value[]
+        {
+            new AST.Value { type = AST.FullType.OBJECT, value = "brum" },
+            new AST.Value { type = AST.FullType.POSITIONS, value = new AST.Value[] { Position(0, 0), Position(0, 1), Position(1, 1) } },
+        }));
+
+        Debug.LogFormat("Output: {0} ({1})", value.value, value.type);
     }
 
     public void EditInput(AST.Line line, int index)
