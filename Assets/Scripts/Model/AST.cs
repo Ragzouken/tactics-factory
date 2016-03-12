@@ -145,14 +145,30 @@ namespace AST
             this.inputs = inputs;
         }
 
+        public Line(Function function, bool @return, params Reference[] inputs)
+        {
+            this.function = function;
+            this.inputs = inputs;
+            this.@return = @return;
+        }
+
         public override string ToString()
         {
-            if (@return)
+            string call = "";
+
+            if (function != null)
             {
-                return string.Format("return {0}", inputs[0].name);
+                call = string.Format("{0}({1})", function.name, string.Join(", ", inputs.Skip(1).Select(input => input.name).ToArray()));
             }
 
-            return string.Format("{0} = {1}({2})", inputs[0].name, function.name, string.Join(", ", inputs.Skip(1).Select(input => input.name).ToArray()));
+            if (@return)
+            {
+                string condition = call == "" ? "" : string.Format("if ({0}) ", call);
+
+                return string.Format("{1}return {0}", inputs[0].name, condition);
+            }
+
+            return string.Format("{0} = {1}", inputs[0].name, call);
         }
 
         public IEnumerable<Component> components
@@ -436,7 +452,7 @@ namespace AST
                     {
                         var ret = line.inputs[0];
                         var val = ret.literal ? ret.asliteral : locals[ret];
-                        Debug.LogFormat("return {0}", val);
+                        //Debug.LogFormat("return {0}", val);
                         result = val;
                         break;
                     }
@@ -450,19 +466,19 @@ namespace AST
                         {
                             var ret = line.inputs[0];
                             var val = ret.literal ? ret.asliteral : locals[ret];
-                            Debug.LogFormat("return {0}", val);
+                            //Debug.LogFormat("return {0}", val);
                             result = val;
                             break;
                         }
                         else
                         {
-                            Debug.LogFormat("skip return");
+                            //Debug.LogFormat("skip return");
                             continue;
                         }
                     }
                     else
                     {
-                        Debug.LogFormat("{0} = {1}", destination, value);
+                        //Debug.LogFormat("{0} = {1}", destination, value);
                     }
 
                     locals[destination] = value;

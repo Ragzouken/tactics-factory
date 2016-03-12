@@ -116,8 +116,6 @@ public class TestEditor : MonoBehaviour
 
             builtin = arguments =>
             {
-                Debug.LogErrorFormat("CHECKING {0} -> {1}", arguments[1], arguments[2]);
-
                 return TRUE;
             }
         };
@@ -181,22 +179,16 @@ public class TestEditor : MonoBehaviour
         var LIT_TRUE = new AST.Reference("true", BOOLEAN, true);
         var LIT_FALSE = new AST.Reference("false", BOOLEAN, true);
 
-        var ret1 = new AST.Line(shorterthan, LIT_TRUE, f.signature[2], new AST.Reference("2", NUMBER, true));
-        ret1.@return = true;
-
-        var ret2 = new AST.Line(null, result);
-        ret2.@return = true;
-
         f.body = new List<AST.Line>
         {
-            ret1,
+            new AST.Line(shorterthan, true, LIT_TRUE, f.signature[2], new AST.Reference("2", NUMBER, true)),
             new AST.Line(element, first,  new AST.Reference("1", NUMBER, true), f.signature[2]),
             new AST.Line(element, second, new AST.Reference("2", NUMBER, true), f.signature[2]),
             new AST.Line(canpass, valid,  f.signature[1], first, second),
             new AST.Line(skip,    rest,   f.signature[2], new AST.Reference("1", NUMBER, true)),
             new AST.Line(f,       others, f.signature[1], rest),
             new AST.Line(and,     result, valid, others),
-            ret2,
+            new AST.Line(null, true, result),
         };
 
         functions = new[]
