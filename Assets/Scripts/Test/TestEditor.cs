@@ -81,7 +81,7 @@ public class TestEditor : MonoBehaviour
                 new AST.Reference("count",    AST.FullType.NUMBER),
             },
 
-            comments = new[] { "whether", "contains fewer than", "positions" },
+            comments = new[] { "", "contains fewer than", "positions" },
 
             builtin = arguments => new AST.Value { type = AST.FullType.BOOLEAN, value = arguments[0].sequence.Length < arguments[1].integer },
         };
@@ -112,7 +112,7 @@ public class TestEditor : MonoBehaviour
                 new AST.Reference("to",      POSITION),
             },
 
-            comments = new[] { "whether", "could pass from", "to", "" },
+            comments = new[] { "", "could pass from", "to", "" },
 
             builtin = arguments =>
             {
@@ -153,7 +153,7 @@ public class TestEditor : MonoBehaviour
                 new AST.Reference("b", BOOLEAN),
             },
 
-            comments = new[] { "whether both", "and", "are true" },
+            comments = new[] { "both", "and", "are true" },
 
             builtin = arguments => new AST.Value { type = BOOLEAN, value = arguments[0].boolean && arguments[1].boolean },
         };
@@ -168,7 +168,7 @@ public class TestEditor : MonoBehaviour
                 new AST.Reference("path",    POSITIONS),
             },
 
-            comments = new[] { "whether", "can follow", "" },
+            comments = new[] { "", "can follow", "" },
         };
         
         var first  = new AST.Reference("first",  POSITION);

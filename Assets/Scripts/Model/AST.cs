@@ -159,11 +159,17 @@ namespace AST
         {
             get
             {
+                string first = (function != null && function.comments[0] != "") 
+                             ? " " + function.comments[0] 
+                             : "";
+ 
                 if (assignment)
                 {
+                    bool boolean = function.signature[0].type == FullType.BOOLEAN;
+
                     yield return new Component("set", this);
                     yield return new Component(inputs[0], this, 0);
-                    yield return new Component("to", this);
+                    yield return new Component("to" + (boolean ? " whether" : "") + first, this);
                 }
                 else if (@return)
                 {
@@ -172,15 +178,13 @@ namespace AST
 
                     if (function == null) yield break;
 
-                    yield return new Component("if", this);
+                    yield return new Component("if" + first, this);
                 }
-
-                yield return new Component(function.comments[0], this);
 
                 for (int i = 1; i < function.signature.Length; ++i)
                 {
                     yield return new Component(inputs[i], this, i);
-                    yield return new Component(function.comments[i], this);
+                    if (function.comments[i] != "") yield return new Component(function.comments[i], this);
                 }
             }
         }
