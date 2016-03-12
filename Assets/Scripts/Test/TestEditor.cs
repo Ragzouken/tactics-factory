@@ -55,6 +55,37 @@ public class TestEditor : MonoBehaviour
 
         var TRUE = new AST.Value { type = BOOLEAN, value = true };
 
+        var choose = new AST.Function
+        {
+            name = "choose",
+            signature = new[]
+            {
+                new AST.Reference("@result", AST.FullType.BOOLEAN),
+                new AST.Reference("first",   AST.FullType.BOOLEAN),
+                new AST.Reference("switch",  AST.FullType.BOOLEAN),
+                new AST.Reference("second",  AST.FullType.BOOLEAN),
+            },
+
+            comments = new[] { "", "if", "is true, otherwise to", "" },
+
+            builtin = arguments => arguments[1].boolean ? arguments[0] : arguments[2],
+        };
+
+        var shorterthan = new AST.Function
+        {
+            name = "shorterthan",
+            signature = new[]
+            {
+                new AST.Reference("@result",  AST.FullType.BOOLEAN),
+                new AST.Reference("sequence", AST.FullType.POSITIONS),
+                new AST.Reference("count",    AST.FullType.NUMBER),
+            },
+
+            comments = new[] { "whether", "contains fewer than", "positions" },
+
+            builtin = arguments => new AST.Value { type = AST.FullType.BOOLEAN, value = arguments[0].sequence.Length < arguments[1].integer },
+        };
+
         var element = new AST.Function
         {
             name = "element",
@@ -67,7 +98,7 @@ public class TestEditor : MonoBehaviour
 
             comments = new[] { "element", "within", "" },
 
-            builtin = arguments => arguments[1].AsSequence()[arguments[0].integer - 1],
+            builtin = arguments => arguments[1].sequence[arguments[0].integer - 1],
         };
 
         var canpass = new AST.Function
@@ -83,7 +114,12 @@ public class TestEditor : MonoBehaviour
 
             comments = new[] { "whether", "could pass from", "to", "" },
 
-            builtin = arguments => TRUE,
+            builtin = arguments =>
+            {
+                Debug.LogErrorFormat("CHECKING {0} -> {1}", arguments[1], arguments[2]);
+
+                return TRUE;
+            }
         };
 
         var skip = new AST.Function
@@ -98,7 +134,13 @@ public class TestEditor : MonoBehaviour
 
             comments = new[] { "the elements of", "after skipping", "positions" },
 
-            builtin = arguments => new AST.Value { type = arguments[0].type, value = arguments[0].sequence.Skip(arguments[1].integer).ToArray() },
+            builtin = arguments =>
+            {
+                int count = arguments[1].integer;
+                var sequence = arguments[0].sequence;
+
+                return new AST.Value { type = arguments[0].type, value = sequence.Skip(count).ToArray() };
+            },
         };
 
         var and = new AST.Function
@@ -128,7 +170,7 @@ public class TestEditor : MonoBehaviour
 
             comments = new[] { "whether", "can follow", "" },
         };
-
+        
         var first  = new AST.Reference("first",  POSITION);
         var second = new AST.Reference("second", POSITION);
         var valid  = new AST.Reference("valid",  BOOLEAN);
@@ -136,14 +178,25 @@ public class TestEditor : MonoBehaviour
         var others = new AST.Reference("others", BOOLEAN);
         var result = new AST.Reference("result", BOOLEAN);
 
+        var LIT_TRUE = new AST.Reference("true", BOOLEAN, true);
+        var LIT_FALSE = new AST.Reference("false", BOOLEAN, true);
+
+        var ret1 = new AST.Line(shorterthan, LIT_TRUE, f.signature[2], new AST.Reference("2", NUMBER, true));
+        ret1.@return = true;
+
+        var ret2 = new AST.Line(null, result);
+        ret2.@return = true;
+
         f.body = new List<AST.Line>
         {
+            ret1,
             new AST.Line(element, first,  new AST.Reference("1", NUMBER, true), f.signature[2]),
             new AST.Line(element, second, new AST.Reference("2", NUMBER, true), f.signature[2]),
             new AST.Line(canpass, valid,  f.signature[1], first, second),
             new AST.Line(skip,    rest,   f.signature[2], new AST.Reference("1", NUMBER, true)),
             new AST.Line(f,       others, f.signature[1], rest),
             new AST.Line(and,     result, valid, others),
+            ret2,
         };
 
         functions = new[]
@@ -240,22 +293,7 @@ public class TestEditor : MonoBehaviour
 
         text.AppendLine(string.Join("\n", function.body.Select(line => line.ToString()).ToArray()));
 
-        var replacements = new Dictionary<AST.Reference, string>();
-
-        foreach (var line in function.body)
-        {
-            var args = string.Join(", ",
-                                   line.inputs
-                                       .Skip(1)
-                                       .Select(r => (replacements.ContainsKey(r) ? replacements[r] : r.name))
-                                       .ToArray());
-            var final = string.Format("{0}({1})", line.function.name, args);
-
-            replacements[line.inputs[0]] = final;
-        }
-
         Debug.Log(text.ToString());
-        Debug.Log(replacements[function.body.Last().inputs[0]]);
 
         var context = new AST.Context();
         var value = context.Evaluate(new AST.Invocation(function, new AST.Value[]

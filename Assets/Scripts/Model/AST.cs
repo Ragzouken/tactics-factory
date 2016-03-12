@@ -10,6 +10,7 @@ namespace AST
 {
     public enum Type
     {
+        Error,
         Boolean,
         Number,
         Object,
@@ -19,6 +20,8 @@ namespace AST
 
     public struct FullType
     {
+        public static FullType ERROR     = new FullType { type = Type.Error };
+
         public static FullType NUMBER    = new FullType { type = Type.Number };
         public static FullType NUMBERS   = new FullType { type = Type.Number, collection = true };
 
@@ -119,6 +122,10 @@ namespace AST
                 {
                     return new Value { type = type, value = int.Parse(name) };
                 }
+                else if (type == FullType.BOOLEAN)
+                {
+                    return new Value { type = type, value = bool.Parse(name) };
+                }
 
                 return new Value { type = type, value = "SORRY NOT IMPLEMENTED" };
             }
@@ -130,6 +137,8 @@ namespace AST
         public Function function;
         public Reference[] inputs;
 
+        public bool @return;
+
         public Line(Function function, params Reference[] inputs)
         {
             this.function = function;
@@ -138,6 +147,11 @@ namespace AST
 
         public override string ToString()
         {
+            if (@return)
+            {
+                return string.Format("return {0}", inputs[0].name);
+            }
+
             return string.Format("{0} = {1}({2})", inputs[0].name, function.name, string.Join(", ", inputs.Skip(1).Select(input => input.name).ToArray()));
         }
 
@@ -145,9 +159,21 @@ namespace AST
         {
             get
             {
-                yield return new Component("set", this);
-                yield return new Component(inputs[0], this, 0);
-                yield return new Component("to", this);
+                if (assignment)
+                {
+                    yield return new Component("set", this);
+                    yield return new Component(inputs[0], this, 0);
+                    yield return new Component("to", this);
+                }
+                else if (@return)
+                {
+                    yield return new Component("return", this);
+                    yield return new Component(inputs[0], this, 0);
+
+                    if (function == null) yield break;
+
+                    yield return new Component("if", this);
+                }
 
                 yield return new Component(function.comments[0], this);
 
@@ -163,7 +189,7 @@ namespace AST
         {
             get
             {
-                return !function.action;
+                return !@return && !function.action;
             }
         }
     }
@@ -299,6 +325,14 @@ namespace AST
             }
         }
 
+        public bool error
+        {
+            get
+            {
+                return arguments.Any(arg => arg.type == FullType.ERROR);
+            }
+        }
+
         public override string ToString()
         {
             return string.Format("{0}({1})", 
@@ -348,8 +382,10 @@ namespace AST
         private Dictionary<Invocation, Value> cache
             = new Dictionary<Invocation, Value>();
 
-        public Value Evaluate(Invocation invocation)
+        public Value Evaluate(Invocation invocation, int depth=0)
         {
+            if (depth > 10) return new Value { type = FullType.ERROR, value = "TOO DEEP" };
+
             Value result = default(Value);
             
             if (!invocation.function.uncacheable
@@ -359,7 +395,7 @@ namespace AST
             }
 
             Assert.IsTrue(invocation.valid, "Invocation {0} is invalid!");
-            Debug.LogFormat("invoking: {0}", invocation);
+            //Debug.LogFormat("invoking: {0}", invocation);
 
             if (invocation.function.builtin != null)
             {
@@ -392,10 +428,38 @@ namespace AST
                                                          : locals[input];
                     }
 
-                    var expression = new Invocation(line.function, arguments);
-                    var value = Evaluate(expression);
+                    if (line.@return && line.function == null)
+                    {
+                        var ret = line.inputs[0];
+                        var val = ret.literal ? ret.asliteral : locals[ret];
+                        Debug.LogFormat("return {0}", val);
+                        result = val;
+                        break;
+                    }
 
-                    Debug.LogFormat("{0} = {1}", destination, value);
+                    var expression = new Invocation(line.function, arguments);
+                    var value = Evaluate(expression, depth+1);
+
+                    if (line.@return)
+                    {
+                        if (value.boolean)
+                        {
+                            var ret = line.inputs[0];
+                            var val = ret.literal ? ret.asliteral : locals[ret];
+                            Debug.LogFormat("return {0}", val);
+                            result = val;
+                            break;
+                        }
+                        else
+                        {
+                            Debug.LogFormat("skip return");
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogFormat("{0} = {1}", destination, value);
+                    }
 
                     locals[destination] = value;
                     result = value;
